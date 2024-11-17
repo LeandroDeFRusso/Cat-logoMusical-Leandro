@@ -1,7 +1,5 @@
 import { DataTypes } from "sequelize";
-import { sequelize } from "../dbConfig.js"
-import { Artista } from "./Artista.js";
-import faixaModel from "./Faixa.js";
+import { sequelize } from "../dbConfig.js";
 
 const Disco = sequelize.define('Disco', {
     discoId: {
@@ -65,7 +63,7 @@ const GeneroMusical = sequelize.define('GeneroMusical', {
     timestamps: false
 });
 
-//Parte para criação das associações ao disco
+/*Parte para criação das associações ao disco
 Disco.belongsTo(Artista, { foreignKey: 'artistaFk' });
 Artista.hasMany(Disco, { foreignKey: 'artistaFk' });
 
@@ -74,6 +72,7 @@ Faixa.belongsTo(Disco, { foreignKey: 'discoFk' });
 
 Disco.belongsToMany(GeneroMusical, { through: 'DiscoGeneroMusical' });
 GeneroMusical.belongsToMany(Disco, { through: 'DiscoGeneroMusical' });
+*/
 
 const createDiscoTable = async () => {
     try {
@@ -91,17 +90,16 @@ const createDisco = async (titulo, anoLancamento, capa, nome, duracao, audio, ge
             anoLancamento,
             capa
         });
-        await Faixa.create({
-            nome,
-            duracao,
-            audio,
-            discoFk: novoDisco.discoId
-        });
-        const novoGenero = await GeneroMusical.create({
-            genero
-        });
-        await novoDisco.setGeneroMusical(novoGenero);
-        console.log('Disco e faixas inseridos com sucesso!');
+        const discoFK = novoDisco.discoId;
+        await sequelize.query(
+            'INSERT INTO faixa(nome, duracao, audio, discoFK) values(:nome, :duracao, :audio, :discoFK)',
+            {replacements: { nome, duracao, audio, discoFK}}
+        );
+        await sequelize.query(
+            'INSERT INTO generomusical(genero, discoFK) values(:genero, :discoFK)',
+            {replacements: { genero, discoFK}}
+        );
+        console.log('Disco, faixas e genero musical inseridos com sucesso!');
     } catch (err) {
         console.error('Erro ao inserir o disco ou as faixas, tente novamente:', err);
     }

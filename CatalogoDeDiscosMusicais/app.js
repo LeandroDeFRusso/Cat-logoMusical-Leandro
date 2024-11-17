@@ -23,7 +23,7 @@ const __dirname = path.dirname(__filename);
 //Configurações do app
     //Sessão
     app.use(session({
-        secret: '',
+        secret: 'fsnfosnfibuingsbgsngjsnvjbnsbusnvsnjbsj',
         resave: false,
         saveUnitialized: true,
         cookie: { secure: false}

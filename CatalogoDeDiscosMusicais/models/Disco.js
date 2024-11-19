@@ -132,12 +132,38 @@ const validarDiscosNaoAssociados = async () =>{
     return results;
 };
 
+const findDiscoById = async (id) => {
+    try {
+        const [results] = await sequelize.query(`
+            SELECT 
+                d.discoId, 
+                d.titulo, 
+                d.anoLancamento, 
+                d.capa,
+                f.nome AS faixaNome, 
+                f.duracao AS faixaDuracao,
+                f.audio as faixaAudio,
+                g.genero AS generoMusical,
+                a.nome AS nomeArtista
+            FROM Disco d
+            LEFT JOIN faixa f ON d.discoId = f.discoFk
+            LEFT JOIN generomusical g ON d.discoId = g.discoFk
+            LEFT JOIN artista a ON d.artistaFk = a.id
+            WHERE d.discoId = :id
+        `, { replacements: { id } });
+        return results.length > 0 ? results[0] : null;
+    } catch (err) {
+        console.error('Erro ao buscar detalhes do disco:', err);
+        throw err;
+    }
+};
 
 const discosModel = {
     createDiscoTable,
     createDisco,
     findAllDiscos,
-    validarDiscosNaoAssociados
+    validarDiscosNaoAssociados,
+    findDiscoById
 };
 
 export default discosModel;

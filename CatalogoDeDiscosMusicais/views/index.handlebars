@@ -5,31 +5,24 @@
             {{#each discos}}
                 <div class="col">
                     <div class="card h-100 shadow-sm">
-                        <div class="image-container">
-                            <img src="/uploads/{{this.capa}}" class="card-img-top" alt="{{this.titulo}}">
-                        </div>
+                        <img src="/uploads/{{this.capa}}" class="card-img-top" alt="Capa de {{this.titulo}}">
                         <div class="card-body d-flex flex-column">
                             <h5 class="card-title text-primary">{{this.titulo}}</h5>
                             <p class="card-text mb-3">
                                 <strong>Ano de Lançamento:</strong> {{this.anoLancamento}}<br>
-                                <strong>Gênero:</strong> 
-                                <span class="badge bg-primary">{{this.generoMusical}}</span>
+                                <strong>Gênero:</strong> <span class="badge bg-primary">{{this.generoMusical}}</span>
                             </p>
                             <hr>
                             <div>
                                 <h6 class="mb-2">Faixas:</h6>
-                                <ul class="list-group list-group-flush flex-grow-1">
-                                            <li class="list-group-item">
-                                                <strong>{{this.faixaNome}}</strong> <span class="text-muted">({{this.faixaDuracao}})</span>
-                                                <audio controls class="w-100 mt-2">
-                                                    <source src="/uploads/{{this.faixaAudio}}" type="audio/mpeg">
-                                                    Seu navegador não suporta o player de áudio.
-                                                </audio>
-                                            </li>
+                                <ul class="list-group list-group-flush">
+                                    <li class="list-group-item">
+                                        <strong>{{this.faixaNome}}</strong> <span class="text-muted">({{this.faixaDuracao}})</span>
+                                    </li>
                                 </ul>
                             </div>
-                            <div class="mt-3">
-                                <h6>Artista: <span class="text-secondary">{{this.nomeArtista}}</span></h6>
+                            <div class="mt-3 text-end">
+                                <a href="/discos/{{this.discoId}}" class="btn btn-outline-primary">Ver mais</a>
                             </div>
                         </div>
                     </div>

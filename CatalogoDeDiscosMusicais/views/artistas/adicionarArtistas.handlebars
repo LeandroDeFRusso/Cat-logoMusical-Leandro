@@ -9,19 +9,21 @@
             <option value="" disabled selected>Selecione um gênero</option>
         </select>
     </div>
-    <div class="mb-3">
-        <label class="form-label">Vincular Discos</label>
-        <div>
-            {{#each discos}}
-            <div class="form-check">
-                <input class="form-check-input" type="checkbox" name="discos" value="{{this.discoId}}" id="disco-{{this.discoId}}">
-                <label class="form-check-label" for="disco-{{this.discoId}}">
-                    {{this.titulo}} ({{this.anoLancamento}})
-                </label>
-            </div>
-            {{/each}}
+<div class="mb-3">
+    <label class="form-label">Vincular Discos</label>
+    <div>
+        {{#each discos}}
+        <div class="form-check">
+            <input class="form-check-input" type="checkbox" name="discos" value="{{this.discoId}}" id="disco-{{this.discoId}}">
+            <label class="form-check-label" for="disco-{{this.discoId}}">
+                {{this.titulo}} ({{this.anoLancamento}})
+            </label>
         </div>
+        {{/each}}
     </div>
+</div>
+
+
     <div class="d-flex justify-content-end">
         <button type="submit" class="btn btn-primary">Cadastrar Artista</button>
     </div>

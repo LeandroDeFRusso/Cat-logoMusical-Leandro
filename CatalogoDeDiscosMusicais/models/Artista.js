@@ -33,28 +33,30 @@ const createArtistaTable = async () =>{
 const createArtista = async ({ nome, generoMusical, discos }) => {
     const transaction = await sequelize.transaction();
     try {
-        const novoArtista = await Artista.create({ 
-            nome, 
-            generoMusical 
-        }, { 
-            transaction 
-        });
+        // Criação do artista
+        const novoArtista = await Artista.create(
+            { nome, generoMusical },
+            { transaction }
+        );
 
-
-
-        if (discosArray.length > 0) {
+        // Verifica se há discos selecionados
+        const discosArray = Array.isArray(discos) ? discos : [discos];
+        if (discosArray && discosArray.length > 0) {
             const query = `
                 UPDATE Disco
-                SET artistaFK = ?
-                WHERE discoId IN (?) 
-                AND (artistaFK IS NULL OR artistaFK != ?);
+                SET artistaFk = :artistaId
+                WHERE discoId IN (:discos);
             `;
+
             await sequelize.query(query, {
-                replacements: [novoArtista.id, discosArray, novoArtista.id],
+                replacements: {
+                    artistaId: novoArtista.id,
+                    discos: discosArray, // IDs dos discos
+                },
                 transaction,
-                type: sequelize.QueryTypes.UPDATE
             });
         }
+
         await transaction.commit();
         return novoArtista;
     } catch (err) {
@@ -64,14 +66,44 @@ const createArtista = async ({ nome, generoMusical, discos }) => {
     }
 };
 
-
-
-
-
+const updateArtista = async ({artistaId, nome, generoMusical, discos}) => {
+    const transaction = await sequelize.transaction();
+    try {
+        const artistaAtualizado = await sequelize.update(
+            { nome, generoMusical},
+            {
+                where: {id: artistaId},
+                transaction,
+            }
+        );
+        const removerAssociacoes = 'UPDATE disco SET artistaFk = NULL WHERE artistaFk =:artistaId';
+        await sequelize.query(removerAssociacoes, {
+            replacements: { artistaId },
+            transaction,
+        });
+        if (discos && discos.length > 0) {
+            const atualizarDiscos = 'UPDATE disco SET artistaFk = :artistaId WHERE discoId IN (:discos);';
+            await sequelize.query(atualizarDiscos, {
+                replacements: {
+                    artistaId,
+                    discos,
+                },
+                transaction,
+            });
+        }
+        await transaction.commit();
+        return artistaAtualizado;
+    } catch (err) {
+        await transaction.rollback();
+        console.error('Erro ao atualizar o artista:', err);
+        throw err;
+    }
+}
 
 const artistaModel = {
     createArtistaTable,
-    createArtista
+    createArtista,
+    updateArtista
 };
 
 export default artistaModel;

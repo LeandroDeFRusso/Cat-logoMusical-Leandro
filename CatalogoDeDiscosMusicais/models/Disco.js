@@ -63,17 +63,6 @@ const GeneroMusical = sequelize.define('GeneroMusical', {
     timestamps: false
 });
 
-/*Parte para criação das associações ao disco
-Disco.belongsTo(Artista, { foreignKey: 'artistaFk' });
-Artista.hasMany(Disco, { foreignKey: 'artistaFk' });
-
-Disco.hasMany(Faixa, { foreignKey: 'discoFk' });
-Faixa.belongsTo(Disco, { foreignKey: 'discoFk' });
-
-Disco.belongsToMany(GeneroMusical, { through: 'DiscoGeneroMusical' });
-GeneroMusical.belongsToMany(Disco, { through: 'DiscoGeneroMusical' });
-*/
-
 const createDiscoTable = async () => {
     try {
         await Disco.sync();
@@ -84,31 +73,71 @@ const createDiscoTable = async () => {
 };
 
 const createDisco = async (titulo, anoLancamento, capa, nome, duracao, audio, genero) => {
+    const transaction = await sequelize.transaction();
     try {
-        const novoDisco = await Disco.create({
-            titulo,
-            anoLancamento,
-            capa
-        });
+        const novoDisco = await Disco.create(
+            { titulo, anoLancamento, capa },
+            { transaction }
+        );
         const discoFK = novoDisco.discoId;
+
         await sequelize.query(
             'INSERT INTO faixa(nome, duracao, audio, discoFK) values(:nome, :duracao, :audio, :discoFK)',
-            {replacements: { nome, duracao, audio, discoFK}}
+            { replacements: { nome, duracao, audio, discoFK }, transaction }
         );
+
         await sequelize.query(
             'INSERT INTO generomusical(genero, discoFK) values(:genero, :discoFK)',
-            {replacements: { genero, discoFK}}
+            { replacements: { genero, discoFK }, transaction }
         );
-        console.log('Disco, faixas e genero musical inseridos com sucesso!');
+
+        await transaction.commit();
+        console.log('Disco, faixas e gênero musical inseridos com sucesso!');
     } catch (err) {
-        console.error('Erro ao inserir o disco ou as faixas, tente novamente:', err);
+        await transaction.rollback();
+        console.error('Erro ao inserir o disco ou as faixas:', err);
+        throw err;
     }
+};
+
+const findAllDiscos = async () => {
+    try {
+        const [results] = await sequelize.query(`
+            SELECT 
+                d.discoId, 
+                d.titulo, 
+                d.anoLancamento, 
+                d.capa,
+                f.nome AS faixaNome, 
+                f.duracao AS faixaDuracao,
+                f.audio as faixaAudio,
+                g.genero AS generoMusical,
+                a.nome AS nomeArtista
+            FROM Disco d
+            LEFT JOIN faixa f ON d.discoId = f.discoFk
+            LEFT JOIN generomusical g ON d.discoId = g.discoFk
+            LEFT JOIN artista a ON d.artistaFk = a.id
+        `);
+        return results;
+    } catch (err) {
+        console.error('Erro ao buscar discos:', err);
+        throw err;
+    }
+};
+
+const validarDiscosNaoAssociados = async () =>{
+    const [results] = await sequelize.query(
+        'SELECT titulo, anoLancamento from disco where artistaFk is NULL'
+    );
+    return results;
 };
 
 
 const discosModel = {
     createDiscoTable,
-    createDisco
+    createDisco,
+    findAllDiscos,
+    validarDiscosNaoAssociados
 };
 
 export default discosModel;

@@ -10,6 +10,7 @@ import { fileURLToPath } from 'url';
 import { initialize, sequelize } from './dbConfig.js';
 import discos from './routes/discos.js';
 import index from './routes/index.js';
+import artista from './routes/artista.js'
 
 const app = express();
 
@@ -80,6 +81,7 @@ const __dirname = path.dirname(__filename);
     //Rotas
     app.use('/', index);
     app.use('/discos', discos);
+    app.use('/artistas', artista);
 
 //Liberar Servidor
 const PORT = 8081;

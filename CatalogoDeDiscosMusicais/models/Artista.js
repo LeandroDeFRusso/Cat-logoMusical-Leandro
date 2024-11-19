@@ -30,23 +30,48 @@ const createArtistaTable = async () =>{
     }
 };
 
-const createArtista = async (nome, generoMusical) =>{
+const createArtista = async ({ nome, generoMusical, discos }) => {
+    const transaction = await sequelize.transaction();
     try {
-        await Artista.create({
-            nome,
-            generoMusical
+        const novoArtista = await Artista.create({ 
+            nome, 
+            generoMusical 
+        }, { 
+            transaction 
         });
-        console.log('Artista inserido com sucesso!');
+
+
+
+        if (discosArray.length > 0) {
+            const query = `
+                UPDATE Disco
+                SET artistaFK = ?
+                WHERE discoId IN (?) 
+                AND (artistaFK IS NULL OR artistaFK != ?);
+            `;
+            await sequelize.query(query, {
+                replacements: [novoArtista.id, discosArray, novoArtista.id],
+                transaction,
+                type: sequelize.QueryTypes.UPDATE
+            });
+        }
+        await transaction.commit();
+        return novoArtista;
     } catch (err) {
-        console.error('Erro ao inserir candidato:', err);
+        await transaction.rollback();
+        console.error('Erro ao salvar artista na model:', err);
+        throw err;
     }
 };
 
+
+
+
+
+
 const artistaModel = {
-    Artista,
     createArtistaTable,
     createArtista
 };
 
-export { Artista };
 export default artistaModel;

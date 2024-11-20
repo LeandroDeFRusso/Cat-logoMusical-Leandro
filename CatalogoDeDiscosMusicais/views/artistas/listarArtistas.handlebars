@@ -1,0 +1,42 @@
+<div class="container mt-4">
+    <h1 class="text-center mb-4">Lista de Artistas</h1>
+    {{#if artistas.length}}
+        <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+            {{#each artistas}}
+                <div class="col">
+                    <div class="card h-100 shadow-sm">
+                        <div class="card-body">
+                            <h5 class="card-title">{{this.nomeArtista}}</h5>
+                            <p class="card-text">
+                                <strong>Gênero:</strong> {{this.generoMusical}}
+                            </p>
+                            {{#if this.discos.length}}
+                                <h6>Discos:</h6>
+                                <ul class="list-group list-group-flush">
+                                    {{#each this.discos}}
+                                        <li class="list-group-item">
+                                            <strong>{{this.tituloDisco}}</strong>
+                                            <small class="text-muted">({{this.anoLancamento}})</small>
+                                        </li>
+                                    {{/each}}
+                                </ul>
+                            {{else}}
+                                <p class="text-muted">Nenhum disco associado.</p>
+                            {{/if}}
+                            <div class="mt-3 d-flex justify-content-between">
+                                <a href="/artistas/editarArtistas/{{this.artistaId}}" class="btn btn-warning btn-sm">Editar</a>
+                                <form action="/artistas/excluirArtistas/{{this.artistaId}}" method="POST" onsubmit="return confirm('Tem certeza que deseja excluir este artista?');">
+                                    <button type="submit" class="btn btn-danger btn-sm">Excluir</button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {{/each}}
+        </div>
+    {{else}}
+        <div class="alert alert-warning text-center" role="alert">
+            Nenhum artista encontrado.
+        </div>
+    {{/if}}
+</div>

@@ -30,32 +30,33 @@ const createArtistaTable = async () =>{
     }
 };
 
-const createArtista = async ({ nome, generoMusical, discos }) => {
+const createArtista = async ({ nome, generos, discos }) => {
     const transaction = await sequelize.transaction();
     try {
+        const generoMusical = generos.join(',');
+
         const novoArtista = await Artista.create(
             { nome, generoMusical },
             { transaction }
         );
 
-        // Verifica se há discos selecionados
         const discosArray = Array.isArray(discos) ? discos : [discos];
-        if (discosArray && discosArray.length > 0) {
+
+        if (discosArray.length > 0) {
             const query = `
                 UPDATE Disco
-                SET artistaFk = :artistaId
+                SET ArtistaFK = :id
                 WHERE discoId IN (:discos);
             `;
 
             await sequelize.query(query, {
                 replacements: {
-                    artistaId: novoArtista.id,
+                    id: novoArtista.id,
                     discos: discosArray,
                 },
                 transaction,
             });
         }
-
         await transaction.commit();
         return novoArtista;
     } catch (err) {
@@ -65,44 +66,126 @@ const createArtista = async ({ nome, generoMusical, discos }) => {
     }
 };
 
-const updateArtista = async ({artistaId, nome, generoMusical, discos}) => {
+
+
+const updateArtista = async (artistaId, nome, generoMusical) => {
+    try {
+        await sequelize.query(
+            `UPDATE Artista
+             SET nome = :nome,
+                 generoMusical = :generoMusical
+             WHERE id = :artistaId`,
+            {
+                replacements: { artistaId, nome, generoMusical },
+            }
+        );
+        return true;
+    } catch (err) {
+        console.error('Erro ao atualizar artista:', err);
+        throw err;
+    }
+};
+
+const findAllArtistas = async () => {
+    try {
+        const [results] = await sequelize.query(`
+            SELECT 
+                a.id AS artistaId,
+                a.nome AS nomeArtista,
+                a.generoMusical,
+                d.discoId,
+                d.titulo AS tituloDisco,
+                d.anoLancamento,
+                d.capa
+            FROM Artista a
+            LEFT JOIN Disco d ON a.id = d.artistaFk
+        `);
+        return results;
+    } catch (err) {
+        console.error('Erro ao buscar artistas:', err);
+        throw err;
+    }
+};
+
+const deleteArtista = async (artistaId) => {
     const transaction = await sequelize.transaction();
     try {
-        const artistaAtualizado = await sequelize.update(
-            { nome, generoMusical},
+        await sequelize.query(
+            `UPDATE Disco
+             SET artistaFk = NULL
+             WHERE artistaFk = :artistaId`,
             {
-                where: {id: artistaId},
+                replacements: { artistaId },
                 transaction,
             }
         );
-        const removerAssociacoes = 'UPDATE disco SET artistaFk = NULL WHERE artistaFk =:artistaId';
-        await sequelize.query(removerAssociacoes, {
-            replacements: { artistaId },
-            transaction,
-        });
-        if (discos && discos.length > 0) {
-            const atualizarDiscos = 'UPDATE disco SET artistaFk = :artistaId WHERE discoId IN (:discos);';
-            await sequelize.query(atualizarDiscos, {
-                replacements: {
-                    artistaId,
-                    discos,
-                },
+        await sequelize.query(
+            `DELETE FROM Artista
+             WHERE id = :artistaId`,
+            {
+                replacements: { artistaId },
                 transaction,
-            });
-        }
+            }
+        );
         await transaction.commit();
-        return artistaAtualizado;
+        return true;
     } catch (err) {
         await transaction.rollback();
-        console.error('Erro ao atualizar o artista:', err);
+        console.error('Erro ao excluir artista:', err);
         throw err;
     }
-}
+};
+
+const findArtistaById = async (id) => {
+    try {
+        const [results] = await sequelize.query(`
+            SELECT 
+                a.id AS artistaId,
+                a.nome AS nomeArtista,
+                a.generoMusical,
+                d.discoId,
+                d.titulo AS tituloDisco,
+                d.anoLancamento,
+                d.capa
+            FROM Artista a
+            LEFT JOIN Disco d ON a.id = d.artistaFk
+            WHERE a.id = :id
+        `, {
+            replacements: { id },
+        });
+
+        if (!results || results.length === 0) {
+            return null;
+        }
+
+        const artista = {
+            artistaId: results[0].artistaId,
+            nomeArtista: results[0].nomeArtista,
+            generoMusical: results[0].generoMusical,
+            discos: results
+                .filter(r => r.discoId)
+                .map(disco => ({
+                    discoId: disco.discoId,
+                    tituloDisco: disco.tituloDisco,
+                    anoLancamento: disco.anoLancamento,
+                    capa: disco.capa,
+                })),
+        };
+
+        return artista;
+    } catch (err) {
+        console.error('Erro ao buscar artista pelo ID:', err);
+        throw err;
+    }
+};
 
 const artistaModel = {
     createArtistaTable,
     createArtista,
-    updateArtista
+    updateArtista,
+    findAllArtistas,
+    deleteArtista,
+    findArtistaById
 };
 
 export default artistaModel;

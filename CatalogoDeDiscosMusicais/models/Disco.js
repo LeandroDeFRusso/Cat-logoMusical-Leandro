@@ -158,12 +158,63 @@ const findDiscoById = async (id) => {
     }
 };
 
+const updateDiscoById = async (discoId, novoTitulo, novoAnoLancamento, novaCapa, novoGenero, novoNome, novaDuracao, novoAudio) => {
+    const transaction = await sequelize.transaction();
+    try {
+        await sequelize.query(
+            `UPDATE disco
+             SET titulo = :novoTitulo,
+                 anoLancamento = :novoAnoLancamento,
+                 capa = :novaCapa
+             WHERE discoId = :discoId`,
+            {
+                replacements: { novoTitulo, novoAnoLancamento, novaCapa, discoId },
+                transaction,
+            }
+        );
+
+        if (novoGenero) {
+            await sequelize.query(
+                `UPDATE generomusical
+                 SET genero = :novoGenero
+                 WHERE discoFk = :discoId`,
+                {
+                    replacements: { novoGenero, discoId },
+                    transaction,
+                }
+            );
+        }
+
+        if (novoNome || novaDuracao || novoAudio) {
+            await sequelize.query(
+                `UPDATE faixa
+                 SET nome = :novoNome,
+                     duracao = :novaDuracao,
+                     audio = :novoAudio
+                 WHERE discoFk = :discoId`,
+                {
+                    replacements: { novoNome, novaDuracao, novoAudio, discoId },
+                    transaction,
+                }
+            );
+        }
+
+        await transaction.commit();
+        console.log('Disco e faixa atualizados com sucesso!');
+    } catch (err) {
+        await transaction.rollback();
+        console.error('Erro ao atualizar o disco ou a faixa:', err);
+        throw err;
+    }
+};
+
 const discosModel = {
     createDiscoTable,
     createDisco,
     findAllDiscos,
     validarDiscosNaoAssociados,
-    findDiscoById
+    findDiscoById,
+    updateDiscoById
 };
 
 export default discosModel;

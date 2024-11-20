@@ -33,7 +33,6 @@ const createArtistaTable = async () =>{
 const createArtista = async ({ nome, generoMusical, discos }) => {
     const transaction = await sequelize.transaction();
     try {
-        // Criação do artista
         const novoArtista = await Artista.create(
             { nome, generoMusical },
             { transaction }
@@ -51,7 +50,7 @@ const createArtista = async ({ nome, generoMusical, discos }) => {
             await sequelize.query(query, {
                 replacements: {
                     artistaId: novoArtista.id,
-                    discos: discosArray, // IDs dos discos
+                    discos: discosArray,
                 },
                 transaction,
             });

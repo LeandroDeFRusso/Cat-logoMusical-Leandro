@@ -22,8 +22,8 @@
             <h6>Artista:</h6>
             <p>{{disco.nomeArtista}}</p>
             <div class="d-flex gap-2">
-                <a href="/discos/editar/{{disco.discoId}}" class="btn btn-warning">Editar</a>
-                <form action="/discos/excluir/{{disco.discoId}}" method="POST" onsubmit="return confirm('Tem certeza que deseja excluir este disco?');">
+                <a href="/discos/editarDiscos/{{disco.discoId}}" class="btn btn-warning">Editar</a>
+                <form action="/discos/excluirDiscos/{{disco.discoId}}" method="POST" onsubmit="return confirm('Tem certeza que deseja excluir este disco?');">
                     <button type="submit" class="btn btn-danger">Excluir</button>
                 </form>
             </div>

@@ -13,7 +13,9 @@ export const montarDisco = async (req, res) => {
     const audio = req.files?.['audio']?.[0]?.filename || null;
 
     try {
-        await discosModel.createDisco(titulo, anoLancamento, capa, nome, duracao, audio, genero);
+        const generosArray = Array.isArray(genero) ? genero : [genero];
+        await discosModel.createDisco(titulo, anoLancamento, capa, nome, duracao, audio, generosArray);
+
         req.flash('success_msg', 'Disco cadastrado com sucesso!');
         res.redirect('/');
     } catch (err) {
@@ -22,6 +24,7 @@ export const montarDisco = async (req, res) => {
         res.redirect('/discos/adicionarDiscos');
     }
 };
+
 
 export const showDiscos = async (req, res) => {
     try {
@@ -88,6 +91,6 @@ export const updateDiscoById = async (req, res) => {
     } catch (err) {
         console.error('Erro ao atualizar disco na controller:', err);
         req.flash('error_msg', 'Erro ao atualizar o disco, tente novamente!');
-        res.redirect(`/discos/editar/${req.body.discoId}`);
+        res.redirect(`/discos/editarDiscos/${req.body.discoId}`);
     }
 };

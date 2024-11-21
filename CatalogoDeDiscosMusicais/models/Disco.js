@@ -72,7 +72,7 @@ const createDiscoTable = async () => {
     }
 };
 
-const createDisco = async (titulo, anoLancamento, capa, nome, duracao, audio, genero) => {
+const createDisco = async (titulo, anoLancamento, capa, nome, duracao, audio, generos) => {
     const transaction = await sequelize.transaction();
     try {
         const novoDisco = await Disco.create(
@@ -86,19 +86,22 @@ const createDisco = async (titulo, anoLancamento, capa, nome, duracao, audio, ge
             { replacements: { nome, duracao, audio, discoFK }, transaction }
         );
 
-        await sequelize.query(
-            'INSERT INTO generomusical(genero, discoFK) values(:genero, :discoFK)',
-            { replacements: { genero, discoFK }, transaction }
-        );
-
+        const generosArray = Array.isArray(generos) ? generos : [generos];
+        for (const genero of generosArray) {
+            await sequelize.query(
+                'INSERT INTO generomusical(genero, discoFK) values(:genero, :discoFK)',
+                { replacements: { genero, discoFK }, transaction }
+            );
+        }
         await transaction.commit();
-        console.log('Disco, faixas e gênero musical inseridos com sucesso!');
+        console.log('Disco, faixas e gêneros musicais inseridos com sucesso!');
     } catch (err) {
         await transaction.rollback();
-        console.error('Erro ao inserir o disco ou as faixas:', err);
+        console.error('Erro ao inserir o disco, as faixas ou os gêneros:', err);
         throw err;
     }
 };
+
 
 const findAllDiscos = async () => {
     try {

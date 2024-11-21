@@ -16,9 +16,9 @@ router.post('/adicionarDiscos',
 
 router.get('/:id', findDiscoById);
 
-router.get('/editar/:id', showUpdateDiscos);
+router.get('/editarDiscos/:id', showUpdateDiscos);
 
-router.post('/editar/:id', updateDiscoById);
+router.post('/editarDiscos/:id', updateDiscoById);
 
 
 

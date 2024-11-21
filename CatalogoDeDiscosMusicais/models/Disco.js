@@ -127,7 +127,7 @@ const findAllDiscos = async () => {
 
 const validarDiscosNaoAssociados = async () =>{
     const [results] = await sequelize.query(
-        'SELECT titulo, anoLancamento from disco where artistaFk is NULL'
+        'SELECT discoId, titulo, anoLancamento from disco where artistaFk is NULL'
     );
     return results;
 };
@@ -208,13 +208,26 @@ const updateDiscoById = async (discoId, novoTitulo, novoAnoLancamento, novaCapa,
     }
 };
 
+const findDiscosByArtistaId = async (artistaId) => {
+    const [results] = await sequelize.query(`
+        SELECT d.discoId, d.titulo, 
+               CASE WHEN d.artistaFk = :artistaId THEN true ELSE false END AS associado
+        FROM Disco d
+        WHERE d.artistaFk IS NULL OR d.artistaFk = :artistaId
+    `, {
+        replacements: { artistaId },
+    });
+    return results;
+};
+
 const discosModel = {
     createDiscoTable,
     createDisco,
     findAllDiscos,
     validarDiscosNaoAssociados,
     findDiscoById,
-    updateDiscoById
+    updateDiscoById,
+    findDiscosByArtistaId
 };
 
 export default discosModel;

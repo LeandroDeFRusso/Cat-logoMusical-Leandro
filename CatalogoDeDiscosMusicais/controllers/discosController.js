@@ -30,7 +30,8 @@ export const showDiscos = async (req, res) => {
         res.render('index', { discos });
     } catch (err) {
         console.error('Erro ao buscar discos:', err);
-        res.status(500).send('Erro ao carregar discos');
+        req.flash('error_msg', 'Erro ao renderizar página, tente novamente"');
+        res.redirect('/');
     }
 };
 
@@ -50,7 +51,7 @@ export const findDiscoById = async (req, res) => {
     }
 };
 
-export const editarDiscos = async (req, res) => {
+export const showUpdateDiscos = async (req, res) => {
     try {
         const disco = await discosModel.findDiscoById(req.params.id);
 

@@ -1,6 +1,5 @@
 import { DataTypes } from "sequelize";
 import { sequelize } from "../dbConfig.js";
-import discosModel from "./Disco.js";
 
 const GeneroMusical = sequelize.define('GeneroMusical', {
     id: {

@@ -8,9 +8,9 @@ import methodOverrride from 'method-override';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { initialize, sequelize } from './dbConfig.js';
+import artista from './routes/artista.js';
 import discos from './routes/discos.js';
 import index from './routes/index.js';
-import artista from './routes/artista.js'
 
 const app = express();
 

@@ -7,12 +7,14 @@ export const showAddArtista = async (req, res) => {
         res.render('artistas/adicionarArtistas', { discos });
     } catch (err) {
         console.error('Erro ao carregar discos:', err);
-        res.status(500).send('Erro ao carregar formulário');
+        req.flash('error_msg', 'Erro ao renderizar tela de adição de Artistas, tente novamente!');
+        res.redirect('/')
     }
 };
 
 export const montarArtista = async (req, res) => {
     const { nome, generoMusical, discos } = req.body;
+    console.log(req.body);
     try {
         const generos = Array.isArray(generoMusical) ? generoMusical : [generoMusical];
         const discosSelecionados = Array.isArray(discos) ? discos : [discos];
@@ -29,7 +31,6 @@ export const montarArtista = async (req, res) => {
         res.redirect('/artistas/adicionarArtistas');
     }
 };
-
 
 export const listarArtistas = async (req, res) => {
     try {
@@ -60,7 +61,6 @@ export const listarArtistas = async (req, res) => {
                         : [],
                 });
             }
-
             return acc;
         }, []);
 
@@ -75,13 +75,14 @@ export const listarArtistas = async (req, res) => {
 export const renderEditarArtista = async (req, res) => {
     try {
         const artista = await artistaModel.findArtistaById(req.params.id);
+        const discos = await discosModel.findDiscosByArtistaId(req.params.id);
 
         if (!artista) {
             req.flash('error_msg', 'Artista não encontrado!');
             return res.redirect('/artistas/visualizarArtistas');
         }
 
-        res.render('artistas/editarArtistas', { artista });
+        res.render('artistas/editarArtistas', { artista, discos });
     } catch (err) {
         console.error('Erro ao carregar artista para edição:', err);
         req.flash('error_msg', 'Erro ao carregar informações do artista.');
@@ -90,11 +91,17 @@ export const renderEditarArtista = async (req, res) => {
 };
 
 export const atualizarArtista = async (req, res) => {
-    const { nome, generoMusical } = req.body;
+    const { nome, generoMusical, discos } = req.body;
 
     try {
         await artistaModel.updateArtista(req.params.id, nome, generoMusical);
-        req.flash('success_msg', 'Artista atualizado com sucesso!');
+
+        await artistaModel.dissociarDiscos(req.params.id);
+        if (discos && discos.length > 0) {
+            await artistaModel.associarDiscos(req.params.id, discos);
+        }
+
+        req.flash('success_msg', 'Artista e discos atualizados com sucesso!');
         res.redirect('/artistas/visualizarArtistas');
     } catch (err) {
         console.error('Erro ao atualizar artista:', err);
@@ -102,7 +109,6 @@ export const atualizarArtista = async (req, res) => {
         res.redirect(`/artistas/editarArtistas/${req.params.id}`);
     }
 };
-
 
 export const excluirArtista = async (req, res) => {
     try {

@@ -1,6 +1,5 @@
 import { DataTypes } from "sequelize";
 import { sequelize } from "../dbConfig.js";
-import discosModel from "./Disco.js";
 
 const Artista = sequelize.define('Artista', {
     id: {
@@ -65,8 +64,6 @@ const createArtista = async ({ nome, generos, discos }) => {
         throw err;
     }
 };
-
-
 
 const updateArtista = async (artistaId, nome, generoMusical) => {
     try {
@@ -179,13 +176,47 @@ const findArtistaById = async (id) => {
     }
 };
 
+const dissociarDiscos = async (artistaId) => {
+    try {
+        await sequelize.query(
+            `UPDATE Disco
+             SET artistaFk = NULL
+             WHERE artistaFk = :artistaId`,
+            {
+                replacements: { artistaId },
+            }
+        );
+    } catch (err) {
+        console.error('Erro ao dissociar discos:', err);
+        throw err;
+    }
+};
+
+const associarDiscos = async (artistaId, discos) => {
+    try {
+        await sequelize.query(
+            `UPDATE Disco
+             SET artistaFk = :artistaId
+             WHERE discoId IN (:discos)`,
+            {
+                replacements: { artistaId, discos },
+            }
+        );
+    } catch (err) {
+        console.error('Erro ao associar discos:', err);
+        throw err;
+    }
+};
+
 const artistaModel = {
     createArtistaTable,
     createArtista,
     updateArtista,
     findAllArtistas,
     deleteArtista,
-    findArtistaById
+    findArtistaById,
+    associarDiscos,
+    dissociarDiscos
 };
 
 export default artistaModel;

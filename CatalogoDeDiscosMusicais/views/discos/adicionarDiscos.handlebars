@@ -1,0 +1,102 @@
+<form action="/discos/adicionarDiscos" method="POST" enctype="multipart/form-data"
+    class="p-4 shadow-sm rounded bg-light">
+    <div class="mb-3">
+        <label for="titulo" class="form-label">Título</label>
+        <input type="text" id="titulo" name="titulo" class="form-control" placeholder="Digite o título do disco que deseja cadastrar!" required>
+    </div>
+
+    <div class="mb-3">
+        <label for="anoLancamento" class="form-label">Ano de Lançamento</label>
+        <input type="date" id="anoLancamento" name="anoLancamento" class="form-control" placeholder="Digite o ano de lançamento do disco!" required>
+    </div>
+
+    <div class="mb-3">
+        <label for="capa" class="form-label">Capa (imagem)</label>
+        <input type="file" id="capa" name="capa" accept="image/jpeg, image/png" class="form-control" required>
+        <small class="form-text text-muted">Apenas arquivos JPEG e PNG são permitidos.</small>
+    </div>
+
+    <div class="mb-3">
+        <label for="audio" class="form-label">Áudio da Faixa</label>
+        <input type="file" id="audio" name="audio" accept="audio/mp3, audio/ogg, audio/wav" class="form-control"
+            required>
+        <small class="form-text text-muted">Selecione um arquivo de áudio para a faixa.</small>
+    </div>
+
+    <div class="mb-3">
+        <label for="nome" class="form-label">Nome da Faixa</label>
+        <input type="text" id="nome" name="nome" class="form-control" placeholder="Digite o nome da Faixa!" required>
+    </div>
+
+    <div class="mb-3">
+        <label for="duracao" class="form-label">Duração da Faixa</label>
+        <input type="text" id="duracao" name="duracao" class="form-control" placeholder="A duração será calculada automaticamente" readonly>
+    </div>
+
+    <div class="mb-3">
+        <label for="genero" class="form-label">Gêneros Musicais</label>
+        <select id="genero" name="genero" class="form-control" multiple required>
+            {{#each generos}}
+            <option value="{{this}}">{{this}}</option>
+            {{/each}}
+        </select>
+    </div>
+
+    <div class="d-flex justify-content-end">
+        <button type="submit" class="btn btn-primary">Cadastrar Disco</button>
+    </div>
+
+</form>
+
+<script>
+    document.getElementById('audio').addEventListener('change', function (event) {
+        const file = event.target.files[0];
+        if (file) {
+            const audio = new Audio(URL.createObjectURL(file));
+            audio.onloadedmetadata = function () {
+                const duration = audio.duration;
+                const minutes = Math.floor(duration / 60);
+                const seconds = Math.floor(duration % 60);
+                document.getElementById('duracao').value = `${minutes}:${seconds < 10 ? '0' + seconds : seconds}`;
+            };
+        }
+    });
+
+    const generos = [
+        'Pop',
+        'Rock',
+        'Hip-hop',
+        'Jazz',
+        'Classical',
+        'Blues',
+        'Reggae',
+        'Electronic',
+        'Country',
+        'Soul',
+        'R&B',
+        'Funk',
+        'Metal',
+        'Ska',
+        'Punk',
+        'Gospel',
+        'Disco',
+        'Techno',
+        'House',
+        'Alternative',
+        'Folk',
+        'Latin',
+        'K-pop',
+        'Indie',
+        'Opera',
+    ];
+
+    const selectGenero = document.getElementById('genero');
+
+    generos.forEach(genero => {
+        const option = document.createElement('option');
+        option.value = genero;
+        option.textContent = genero;
+        selectGenero.appendChild(option);
+    });
+
+</script>

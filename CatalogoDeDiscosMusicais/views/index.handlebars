@@ -1,0 +1,68 @@
+<div class="container mt-4">
+    <form action="/" method="GET" class="row g-3 mb-4">
+        <div class="col-md-4">
+            <label for="titulo" class="form-label">Título do Disco</label>
+            <input type="text" id="titulo" name="titulo" class="form-control" placeholder="Buscar por título"
+                value="{{filtros.titulo}}">
+        </div>
+        <div class="col-md-4">
+            <label for="artista" class="form-label">Artista</label>
+            <input type="text" id="artista" name="artista" class="form-control" placeholder="Buscar por artista"
+                value="{{filtros.artista}}">
+        </div>
+        <div class="col-md-4">
+            <label for="genero" class="form-label">Gênero Musical</label>
+            <input type="text" id="genero" name="genero" class="form-control" placeholder="Buscar por gênero"
+                value="{{filtros.genero}}">
+        </div>
+        <div class="col-md-12 d-flex justify-content-end">
+            <button type="submit" class="btn btn-primary">Buscar</button>
+        </div>
+    </form>
+</div>
+
+<h1 class="text-center mb-4">Catálogo de Discos</h1>
+{{#if discos.length}}
+<div class="row row-cols-1 row-cols-md-3 g-4">
+    {{#each discos}}
+    <div class="col">
+        <div class="card h-100 shadow-sm">
+            <img src="/uploads/{{this.capa}}" class="card-img-top" alt="Capa de {{this.titulo}}">
+            <div class="card-body d-flex flex-column">
+                <h5 class="card-title text-primary">{{this.titulo}}</h5>
+                <p class="card-text mb-3">
+                    <strong>Ano de Lançamento:</strong> {{this.anoLancamento}}<br>
+                <ul class="list-unstyled">
+                    <p><strong>Gêneros:</strong>
+                        {{#each this.generos}}
+                        <span class="badge bg-primary">{{this}}</span>
+                        {{/each}}
+                    </p>
+                </ul>
+                <strong>Artista:</strong> {{this.nomeArtista}}
+                </p>
+                <hr>
+                <div>
+                    <h6 class="mb-2">Faixas:</h6>
+                    <ul class="list-group list-group-flush">
+                        {{#each this.faixas}}
+                        <li class="list-group-item">
+                            <strong>{{this.nome}}</strong> <span class="text-muted">({{this.duracao}})</span>
+                        </li>
+                        {{/each}}
+                    </ul>
+                </div>
+                <div class="mt-3 text-end">
+                    <a href="/discos/{{this.discoId}}" class="btn btn-outline-primary">Ver mais</a>
+                </div>
+            </div>
+        </div>
+    </div>
+    {{/each}}
+</div>
+{{else}}
+<div class="alert alert-warning text-center" role="alert">
+    Nenhum disco cadastrado ainda.
+</div>
+{{/if}}
+</div>

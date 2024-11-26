@@ -7,18 +7,28 @@ const Faixa = sequelize.define('Faixa', {
         autoIncrement: true,
         primaryKey: true,
     },
-    nome: {
+      nome: {
         type: DataTypes.STRING,
         allowNull: false
     },
-    duracao: {
+      duracao: {
         type: DataTypes.STRING,
         allowNull: false
+    }, 
+       audio: {
+        type: DataTypes.STRING,
+        allowNull: false
+    }, 
+      discoFK: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+        references: {
+          model: 'Disco',
+          key: 'discoId',
+      },
+        onUpdate: 'CASCADE',
+        onDelete: 'CASCADE',
     },
-    audio: {
-        type: DataTypes.STRING,
-        allowNull: false
-    }
 }, {
     tableName: 'Faixa',
     timestamps: false

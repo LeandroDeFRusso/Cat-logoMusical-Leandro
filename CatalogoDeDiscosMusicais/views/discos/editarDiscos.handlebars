@@ -1,5 +1,4 @@
 <form action="/discos/editarDiscos/{{disco.discoId}}" method="POST" enctype="multipart/form-data" class="p-4 shadow-sm rounded bg-light">
-    <input type="hidden" name="discoId" value="{{disco.discoId}}">
 
     <div class="mb-3">
         <label for="titulo" class="form-label">Título</label>
@@ -13,7 +12,7 @@
 
     <div class="mb-3">
         <label for="capa" class="form-label">Capa (imagem)</label>
-        <input type="file" id="capa" name="capa" class="form-control" accept="image/*">
+        <input type="file" id="capa" name="capa" class="form-control" accept="image/*" value="{{disco.capa}}">
         <small class="form-text text-muted">Formatos suportados: JPG, PNG.</small>
         <img src="/uploads/{{disco.capa}}" alt="Capa atual" class="img-thumbnail mt-2" style="max-width: 200px;">
     </div>
@@ -29,7 +28,7 @@
 
     <div class="mb-3">
         <label for="duracao" class="form-label">Duração</label>
-        <input type="text" id="duracao" name="duracao" class="form-control" value="{{disco.faixaDuracao}}">
+        <input type="text" id="faixaDuracao" name="faixaDuracao" class="form-control" value="{{disco.faixaDuracao}}">
     </div>
 
     <div class="mb-3">

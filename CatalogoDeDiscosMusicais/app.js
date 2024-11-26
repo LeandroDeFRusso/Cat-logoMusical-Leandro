@@ -1,6 +1,5 @@
 import bodyParser from 'body-parser';
 import flash from 'connect-flash';
-import EventEmitter from 'events';
 import express from 'express';
 import { engine } from 'express-handlebars';
 import session from 'express-session';

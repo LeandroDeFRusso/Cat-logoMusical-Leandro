@@ -7,14 +7,14 @@ const Artista = sequelize.define('Artista', {
         autoIncrement: true,
         primaryKey: true,
     },
-    nome: {
+      nome: {
         type: DataTypes.STRING(50),
         allowNull: false
     },
-    generoMusical: {
+      generoMusical: {
         type: DataTypes.STRING,
         allowNull: false
-    }
+    },
 }, {
     tableName: 'Artista',
     timestamps: false
@@ -103,6 +103,19 @@ const findAllArtistas = async () => {
         console.error('Erro ao buscar artistas:', err);
         throw err;
     }
+};
+
+const findAllArtista = async () => {
+    const [artistas] = await sequelize.query(`
+        SELECT 
+            a.id AS artistaId,
+            a.nome AS nomeArtista,
+            a.generoMusical AS generoArtista
+        FROM artista a
+        LEFT JOIN Disco d ON a.id = d.artistaFk
+        GROUP BY a.id, a.nome, a.generoMusical
+    `);
+    return artistas;
 };
 
 const deleteArtista = async (artistaId) => {
@@ -207,6 +220,56 @@ const associarDiscos = async (artistaId, discos) => {
     }
 };
 
+const searchArtista = async ({ titulo, artista, genero, generoMusical }) => {
+    const whereClauses = [];
+    const replacements = {};
+
+    if (titulo) {
+        whereClauses.push('d.titulo LIKE :titulo');
+        replacements.titulo = `%${titulo}%`;
+    }
+    if (artista) {
+        whereClauses.push('a.nome LIKE :artista');
+        replacements.artista = `%${artista}%`;
+    }
+    if (genero) {
+        whereClauses.push('(g.genero LIKE :genero OR a.generoMusical LIKE :genero)');
+        replacements.genero = `%${genero}%`;
+    }
+    if (generoMusical) {
+        whereClauses.push('a.generoMusical LIKE :generoMusical');
+        replacements.generoMusical = `%${generoMusical}%`;
+    }
+    const whereCondition = whereClauses.length ? `WHERE ${whereClauses.join(' AND ')}` : '';
+    const query = `
+    SELECT 
+        a.id AS artistaId,
+        a.nome AS nomeArtista,
+        a.generoMusical AS generoArtista,
+        d.discoId,
+        d.titulo AS discoTitulo,
+        d.anoLancamento AS anoLancamentoDisco,
+        d.capa AS capaDisco,
+        GROUP_CONCAT(DISTINCT g.genero ORDER BY g.genero ASC SEPARATOR ', ') AS generoMusical,
+        f.nome AS faixaNome,
+        f.duracao AS faixaDuracao,
+        f.audio AS faixaAudio
+    FROM artista a
+    LEFT JOIN Disco d ON a.id = d.artistaFk
+    LEFT JOIN generomusical g ON d.discoId = g.discoFk
+    LEFT JOIN faixa f ON d.discoId = f.discoFk
+    ${whereCondition}
+    GROUP BY a.id, a.nome, a.generoMusical, d.discoId, d.titulo, d.anoLancamento, d.capa, f.nome, f.duracao, f.audio
+    `;
+    try {
+        const [results] = await sequelize.query(query, { replacements });
+        return results;
+    } catch (err) {
+        console.error('Erro ao buscar discos com filtros:', err);
+        throw err;
+    }
+};
+
 const artistaModel = {
     createArtistaTable,
     createArtista,
@@ -215,7 +278,9 @@ const artistaModel = {
     deleteArtista,
     findArtistaById,
     associarDiscos,
-    dissociarDiscos
+    dissociarDiscos,
+    findAllArtista,
+    searchArtista
 };
 
 export default artistaModel;

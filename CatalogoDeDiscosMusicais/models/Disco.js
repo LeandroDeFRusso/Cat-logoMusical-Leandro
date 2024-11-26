@@ -6,30 +6,30 @@ const Disco = sequelize.define('Disco', {
         type: DataTypes.INTEGER,
         autoIncrement: true,
         primaryKey: true,
-    },
-    titulo: {
+      },
+      titulo: {
         type: DataTypes.STRING(50),
         allowNull: false,
-        unique: true
-    },
-    anoLancamento: {
+        unique: true,
+      },
+      anoLancamento: {
         type: DataTypes.STRING(10),
-        allowNull: false
-    },
-    capa: {
+        allowNull: false,
+      },
+      capa: {
         type: DataTypes.STRING,
-        allowNull: false
+        allowNull: false,
+      },      
+        artistaFK: {
+          type: DataTypes.INTEGER,
+          allowNull: true,
+          references: {
+            model: 'Artista',
+            key: 'id',
+      },
+          onUpdate: 'CASCADE',
+          onDelete: 'CASCADE',
     },
-    artistaFK: {
-        type: DataTypes.INTEGER,
-        allowNull: true,
-        references: {
-          model: 'Artista',
-          key: 'id',
-    },
-        onUpdate: 'CASCADE',
-        onDelete: 'CASCADE',
-  },
 }, {
     tableName:'Disco',
     timestamps: false
@@ -275,22 +275,28 @@ const deleteDisco = async (discoId) => {
     }
 };
 
-const findDisco = async ({ titulo, artista, genero, generoMusical }) => {
+const searchDisco = async ({ titulo, artista, genero, generoMusical }) => {
     const whereClauses = [];
     const replacements = {};
 
-    if (titulo) whereClauses.push('d.titulo LIKE :titulo');
-    if (artista) whereClauses.push('a.nome LIKE :artista');
-    if (genero) whereClauses.push('g.genero LIKE :genero');
-    if (generoMusical) whereClauses.push('a.generoMusical LIKE :generoMusical');
-
-    replacements.titulo = titulo ? `%${titulo}%` : undefined;
-    replacements.artista = artista ? `%${artista}%` : undefined;
-    replacements.genero = genero ? `%${genero}%` : undefined;
-    replacements.generoMusical = generoMusical ? `%${generoMusical}%` : undefined;
+    if (titulo) {
+        whereClauses.push('d.titulo LIKE :titulo');
+        replacements.titulo = `%${titulo}%`;
+    }
+    if (artista) {
+        whereClauses.push('a.nome LIKE :artista');
+        replacements.artista = `%${artista}%`;
+    }
+    if (genero) {
+        whereClauses.push('(g.genero LIKE :genero OR a.generoMusical LIKE :genero)');
+        replacements.genero = `%${genero}%`;
+    }
+    if (generoMusical) {
+        whereClauses.push('a.generoMusical LIKE :generoMusical');
+        replacements.generoMusical = `%${generoMusical}%`;
+    }
 
     const whereCondition = whereClauses.length ? `WHERE ${whereClauses.join(' AND ')}` : '';
-
     const query = `
         SELECT 
             d.discoId, 
@@ -299,6 +305,7 @@ const findDisco = async ({ titulo, artista, genero, generoMusical }) => {
             d.capa,
             GROUP_CONCAT(DISTINCT g.genero ORDER BY g.genero ASC SEPARATOR ', ') AS generoMusical,
             a.nome AS nomeArtista,
+            a.generoMusical AS generoArtista,
             f.nome AS faixaNome,
             f.duracao AS faixaDuracao,
             f.audio AS faixaAudio
@@ -307,7 +314,7 @@ const findDisco = async ({ titulo, artista, genero, generoMusical }) => {
         LEFT JOIN faixa f ON d.discoId = f.discoFK
         LEFT JOIN artista a ON d.artistaFk = a.id
         ${whereCondition}
-        GROUP BY d.discoId, d.titulo, d.anoLancamento, d.capa, a.nome, f.nome, f.duracao, f.audio
+        GROUP BY d.discoId, d.titulo, d.anoLancamento, d.capa, a.nome, a.generoMusical, f.nome, f.duracao, f.audio
     `;
     try {
         const [results] = await sequelize.query(query, { replacements });
@@ -329,7 +336,7 @@ const discosModel = {
     deleteDisco,
     findGenerosByDiscoId,
     findFaixasByDiscoId,
-    findDisco
+    searchDisco
 };
 
 export default discosModel;

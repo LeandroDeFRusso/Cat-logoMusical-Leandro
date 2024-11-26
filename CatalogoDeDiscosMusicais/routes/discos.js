@@ -18,7 +18,14 @@ router.get('/:id', findDiscoById);
 
 router.get('/editarDiscos/:id', showUpdateDiscos);
 
-router.post('/editarDiscos/:id', updateDiscoById);
+router.post(
+    '/editarDiscos/:id',
+    handleFileUpload([
+        { name: 'capa', maxCount: 1 },
+        { name: 'audio', maxCount: 1 },
+    ]),
+    updateDiscoById
+);
 
 router.post('/excluirDiscos/:id', excluirDisco);
 

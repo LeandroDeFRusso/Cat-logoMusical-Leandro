@@ -7,10 +7,20 @@ const GeneroMusical = sequelize.define('GeneroMusical', {
         autoIncrement: true,
         primaryKey: true,
     },
-    genero: {
+      genero: {
         type: DataTypes.STRING(50),
         allowNull: false
-    }
+    }, 
+      discoFK: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+        references: {
+         model: 'Disco',
+          key: 'discoId',
+      },
+        onUpdate: 'CASCADE',
+        onDelete: 'CASCADE',
+    },
 }, {
     tableName: 'GeneroMusical',
     timestamps: false

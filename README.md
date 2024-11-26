@@ -8,6 +8,6 @@
 
 <h3> > Template para view: Handlebars
 
-<h3> > Estilização: Bootstrap
+<h3> > Estilização: Bootstrap - CSS
 
 <h3> > Banco de Dados: MySQL
